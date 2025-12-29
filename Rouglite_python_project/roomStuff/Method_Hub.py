@@ -45,7 +45,6 @@ def generateContents(r, player):
             zom.player = player
             zom.group = r.group
             r.group.add(zom)
-        r.quantity = 0
 
 def generate_current_room_tiles(t_Grp, themap,x,y):
     left_door = [(0,3),(0,4),(0,5)]
@@ -101,7 +100,7 @@ def generate_current_room_tiles(t_Grp, themap,x,y):
         newtiles3 = t("Images/tiles/test_01.png", (0 * 32 + 16, 5 * 32 + 16), True)
         t_Grp.add(newtiles1, newtiles2, newtiles3)
 
-def run_game(player, tiles, clock, window, EnemyGroup, players, pAtkGroup, atk, Player_resources, entities):
+def run_game(player, tiles, clock, window, EnemyGroup, players, pAtkGroup, atk, Player_resources, entities, room_Score):
     #this is the hit scan script, drawn before the window.fill() function to put it waya from the eyes of the people
     pAtkGroup.draw(window)
     pAtkGroup.update()
@@ -115,10 +114,14 @@ def run_game(player, tiles, clock, window, EnemyGroup, players, pAtkGroup, atk, 
 
     # draw the tiles first so entities render on top
     tiles.draw(window)
-    font = pygame.font.SysFont(None, 30)
-    text = font.render(f'resource: {Player_resources}', True, (0, 255, 0))
-    window.blit(text, (0,0))
 
+    #draw the player resources
+    font = pygame.font.SysFont(None, 30)
+    text = font.render(f'resource: {Player_resources}/2', True, (0, 255, 0))
+    window.blit(text, (0,0))
+    #draw the room score
+    text2 = font.render(f'rooms cleared: {room_Score}/5', True, (0, 255, 0))
+    window.blit(text2, (0, 30))
     # draw the entities
     entities.draw(window)
     EnemyGroup.draw(window)

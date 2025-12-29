@@ -71,7 +71,7 @@ for row in the_map:
 #close it, but also determine entering gets resources, or into a fight
                     
 
-remove_improper_paths(the_map, room_list)
+#remove_improper_paths(the_map, room_list)
 
 generate_room_tiles(tiles, the_map, playergridx, playergridy)
 #entities and monsters
@@ -92,9 +92,8 @@ rand_pick = random.randint(0, room_len)
 room_list[rand_pick].exit = True
 
 portal1 = portal((scx//2, scy//2))
-for r in room_list:
-    if r.exit == True:
-        print(f'{r.name} and x:{r.x} y:{r.y}')
+for Room in room_list:
+    Room.Rconnect(the_map)
 soruce_room = the_map[2][2]
 portalGroup.add(portal1)  # Add portal to portal group
 
@@ -106,7 +105,7 @@ while True:
             exit()
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_e:
-                if current_room.name == "TBLR" and Player_resources >= 2 and room_Score < 9:
+                if current_room.name == "TBLR" and Player_resources >= 2 and room_Score < 5:
                             #     1     2    3      4     5
                     the_map = [ [None, None, None, None, None], # 0 
                                 [None, None, None, None, None], # 1
@@ -115,7 +114,9 @@ while True:
                                 [None, None, None, None, None]] # 4
                     room_list = []
                     generate_rooms(the_map, room_list)
-                    remove_improper_paths(the_map, room_list)
+                    #remove_improper_paths(the_map, room_list)
+                    for Room in room_list:
+                        Room.Rconnect(the_map)
                     generate_room_tiles(tiles, the_map, playergridx, playergridy)
                     soruce_room = the_map[2][2]
                     soruce_room.quantity = 0
@@ -124,6 +125,7 @@ while True:
                     soruce_room.interacted = True
                     playergridx = 2
                     playergridy = 2
+
                     print("Regenerated map due to lack of resources")
                     for row in the_map:
                         print([str(room) if room is not None else "None" for room in row])
@@ -191,7 +193,7 @@ while True:
                 
                 generateContents(current_room, player)
             current_room = the_map[playergridy][playergridx]
-            if current_room.entered == False and current_room.lootOrMonster == False:
+            if current_room.entered == False:
                 Player_resources += current_room.quantity
                 current_room.entered = True
                 current_room.interacted = True
@@ -202,7 +204,7 @@ while True:
         enemy.move_towards_player()
 
     if current_Screen_value == 1:
-        run_game(player, tiles, clock, window, EnemyGroup, players, pAtkGroup, atk, Player_resources, current_room.EntGrp)
+        run_game(player, tiles, clock, window, EnemyGroup, players, pAtkGroup, atk, Player_resources, current_room.EntGrp, room_Score)
 
         if player.knife <=0 or Player_resources < 0:
             EnemyGroup.empty()
@@ -211,7 +213,7 @@ while True:
             window.fill((0,0,0))
             print("Game Over")
             current_Screen_value = 2
-        elif room_Score >= 9:
+        elif room_Score >= 5:
             EnemyGroup.empty()
             players.empty()
             pAtkGroup.empty()
@@ -242,10 +244,12 @@ while True:
                         [None, None, None, None, None], # 1
                         [None, None, None, None, None], # 2
                         [None, None, None, None, None], # 3
-                        [None, None, None, None]] # 4
+                        [None, None, None, None, None]] # 4
             room_list = []
             generate_rooms(the_map, room_list)
-            remove_improper_paths(the_map, room_list)
+            #remove_improper_paths(the_map, room_list)           
+            for Room in room_list:
+                Room.Rconnect(the_map)
             generate_room_tiles(tiles, the_map, playergridx, playergridy)
             soruce_room = the_map[2][2]
             soruce_room.quantity = 0
@@ -282,7 +286,7 @@ while True:
                         [None, None, None, None]] # 4
             room_list = []
             generate_rooms(the_map, room_list)
-            remove_improper_paths(the_map, room_list)
+            #remove_improper_paths(the_map, room_list)
             generate_room_tiles(tiles, the_map, playergridx, playergridy)
             print(f'rooms: {room_list}')
             soruce_room = the_map[2][2]

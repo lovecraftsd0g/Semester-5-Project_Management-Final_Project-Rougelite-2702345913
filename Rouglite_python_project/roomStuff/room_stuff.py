@@ -35,6 +35,11 @@ class roomv2:
 
 
     def Rconnect(self, themap):
+        # Set self.map if not already set (using passed parameter)
+        if self.map is None:
+            self.map = themap
+        
+        # Connect room references
         if self.y > 0 and themap[self.y-1][self.x] is not None:
             self.roomup = themap[self.y-1][self.x]
         if self.y < len(themap)-1 and themap[self.y+1][self.x] is not None:
@@ -44,31 +49,36 @@ class roomv2:
         if self.x < len(themap[0])-1 and themap[self.y][self.x+1] is not None:
             self.roomright = themap[self.y][self.x+1]
 
-
-        #if the room above path value is divisible by 3, it has a path down
-        #if the room below path value is divisible by 2, it has a path above
-        #if the room to the right path value is divisible by 11 it has a path to the left
-        #if the room to the left path value is divisible by 7 it has a path to the right
-        if self.x > 0 and self.x < len(themap[0]) -1 and self.y >0 and self.y < len(themap) -1:
-            if self.roomup != None and not self.checkpath(2) and  self.roomup.checkpath(3):
-                self.paths = self.paths *2
-            if self.roomdown != None and not self.checkpath(3) and  self.roomdown.checkpath(2):
-                self.paths = self.paths *3
-            if self.roomleft != None and not self.checkpath(7) and self.roomleft.checkpath(11):
-                self.paths = self.paths *7
-            if self.roomright != None and not self.checkpath(11) and self.roomright.checkpath(7):
-                self.paths = self.paths *11
-
+        # Fix the path multiplication logic:
+        # If current room doesn't have path UP but room above has path DOWN, add path UP (2)
+        if self.roomup is not None and not self.checkpath(2) and self.roomup.checkpath(3):
+            self.paths = self.paths * 2
         
-        if self.checkpath(3) and self.y >= len(self.map) - 1:
-            self.paths = int(self.paths//3)
-        elif self.checkpath(2) and self.y <= 0:
-            self.paths = int(self.paths//2)
+        # If current room doesn't have path DOWN but room below has path UP, add path DOWN (3)
+        if self.roomdown is not None and not self.checkpath(3) and self.roomdown.checkpath(2):
+            self.paths = self.paths * 3
         
-        if  self.checkpath(7) and self.x >= len(self.map[0]) - 1:
-            self.paths = int(self.paths//7)
-        elif self.checkpath(11) and self.x <= 0:
-            self.paths = int(self.paths//11)
+        # If current room doesn't have path LEFT but room left has path RIGHT, add path LEFT (11)
+        # Note: 11 = LEFT, so we multiply by 11
+        if self.roomleft is not None and not self.checkpath(11) and self.roomleft.checkpath(7):
+            self.paths = self.paths * 11
+        
+        # If current room doesn't have path RIGHT but room right has path LEFT, add path RIGHT (7)
+        # Note: 7 = RIGHT, so we multiply by 7
+        if self.roomright is not None and not self.checkpath(7) and self.roomright.checkpath(11):
+            self.paths = self.paths * 7
+
+        # Remove paths that lead out of bounds (use themap parameter)
+        if self.checkpath(3) and self.y >= len(themap) - 1:  # DOWN path at bottom edge
+            self.paths = int(self.paths // 3)
+        elif self.checkpath(2) and self.y <= 0:  # UP path at top edge
+            self.paths = int(self.paths // 2)
+        
+        if self.checkpath(7) and self.x >= len(themap[0]) - 1:  # RIGHT path at right edge
+            self.paths = int(self.paths // 7)
+        elif self.checkpath(11) and self.x <= 0:  # LEFT path at left edge
+            self.paths = int(self.paths // 11)
+        
         self.Rconnected = True
     
     def remove_path(self, prime):
