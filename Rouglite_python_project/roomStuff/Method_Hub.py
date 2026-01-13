@@ -37,14 +37,8 @@ def generate_rooms(map, room_list):
     return room_list
 
 def generateContents(r, player):
-    if r.quantity > 0 and r.lootOrMonster:
-        posxbas = 320//2
-        posx = posxbas - 30
-        for i in range(r.quantity):
-            zom = zombie(posx + (i*30), 320//2)
-            zom.player = player
-            zom.group = r.group
-            r.group.add(zom)
+    if r.lootOrMonster:
+        spawn_enemies_in_room(r, player)
 
 def generate_current_room_tiles(t_Grp, themap,x,y):
     left_door = [(0,3),(0,4),(0,5)]
@@ -103,13 +97,15 @@ def generate_current_room_tiles(t_Grp, themap,x,y):
 def run_game(player, tiles, clock, window, EnemyGroup, players, pAtkGroup, atk, Player_resources, entities, room_Score):
     #this is the hit scan script, drawn before the window.fill() function to put it waya from the eyes of the people
     pAtkGroup.draw(window)
-    pAtkGroup.update()
+    pAtkGroup.update(EnemyGroup)
     atk.rect.centerx = player.rect.centerx
     atk.rect.centery = player.rect.centery + 5
 
 
     window.fill((0,100,0))
     
+    for enemy in EnemyGroup:
+        enemy.move_towards_player(player)
 
 
     # draw the tiles first so entities render on top
@@ -117,11 +113,6 @@ def run_game(player, tiles, clock, window, EnemyGroup, players, pAtkGroup, atk, 
 
     #draw the player resources
     font = pygame.font.SysFont(None, 30)
-    text = font.render(f'resource: {Player_resources}/2', True, (0, 255, 0))
-    window.blit(text, (0,0))
-    #draw the room score
-    text2 = font.render(f'rooms cleared: {room_Score}/5', True, (0, 255, 0))
-    window.blit(text2, (0, 30))
     # draw the entities
     entities.draw(window)
     EnemyGroup.draw(window)
@@ -130,6 +121,11 @@ def run_game(player, tiles, clock, window, EnemyGroup, players, pAtkGroup, atk, 
 
     entities.update(Player_resources, 2)
     players.update()
+    text = font.render(f'resource: {Player_resources}/2', True, (0, 255, 0))
+    window.blit(text, (0,0))
+    #draw the room score
+    text2 = font.render(f'rooms cleared: {room_Score}/5', True, (0, 255, 0))
+    window.blit(text2, (0, 30))
 
     pygame.display.update()
     clock.tick(60)
@@ -138,7 +134,15 @@ def makeenemymove(EnemyGroup):
     for enemy in EnemyGroup:
         enemy.move_towards_player()
 
-
+def spawn_enemies_in_room(room, player_reference=None):
+    """Spawn enemies in a room"""
+    posxbas = 320//2
+    posx = posxbas - 30
+    for i in range(room.quantity):
+        zom = zombie(posx + (i*30), 320//2)
+        zom.player = player_reference
+        zom.group = room.EneGroup
+        room.EneGroup.add(zom)
 
 def remove_improper_paths(themap, rooms):
     for r in rooms:
@@ -202,7 +206,6 @@ def remove_improper_paths(themap, rooms):
                 if r.roomright in rooms:
                     print(r.roomright.name)
                     rooms.remove(r.roomleft)
-
 
 
 def delete_unreachable_rooms(themap, rooms, start_x=2, start_y=2):

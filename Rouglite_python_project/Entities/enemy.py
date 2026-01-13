@@ -12,16 +12,16 @@ class zombie(pygame.sprite.Sprite):
         self.health = health
         self.group = group
         self.speed = speed
-        self.player =   Player_Character((0,0))  # Placeholder, will be set later}
+        self.player =  Player_Character((0,0))  # Placeholder, will be set later}
 
         
     def update(self):
         if self.health <= 0:
-            self.group.remove(self)
+            self.kill()
     
-    def move_towards_player(self):
+    def move_towards_player(self, player):
         # Find direction vector (dx, dy) between enemy and player.
-        dx, dy = self.player.rect.x - self.rect.x, self.player.rect.y - self.rect.y
+        dx, dy = player.rect.x - self.rect.x, player.rect.y - self.rect.y
         dist = math.hypot(dx, dy)
         dx, dy = dx / dist, dy / dist  # Normalize.
         # Move along this normalized vector towards the player at current speed.

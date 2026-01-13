@@ -18,7 +18,7 @@ room_Score = 0
 scx = 320
 scy = 320
 window = pygame.display.set_mode((scx,scy))
-
+pygame.display.set_caption("Zombie Dungeon")
 clock = pygame.time.Clock()
 
 tiles = pygame.sprite.Group()
@@ -75,7 +75,7 @@ for row in the_map:
 
 generate_room_tiles(tiles, the_map, playergridx, playergridy)
 #entities and monsters
-EnemyGroup = pygame.sprite.Group()
+EnemyGroup = the_map[playergridy][playergridx].EneGroup
 atk = Atk((player.rect.centerx, player.rect.centery), EnemyGroup, (200,200))
 pAtkGroup = pygame.sprite.Group()
 players = pygame.sprite.Group()
@@ -83,6 +83,7 @@ players.add(player)
 pAtkGroup.add(atk)
 
 portalGroup = pygame.sprite.Group()  # Create portal group
+
 
 current_Screen_value = 1
 # Print more readable room list
@@ -136,7 +137,7 @@ while True:
     current_room = the_map[playergridy][playergridx]
 
     hits = pygame.sprite.spritecollide(player, EnemyGroup, False)  # False = don't remove enemies
-
+    # Handle damage to player
     for hit in hits:
         player.knife -= 1
         print("Player knife count:", player.knife)
@@ -160,7 +161,6 @@ while True:
         elif EnemyGroup.sprites() != []:
             player.rect.centerx = 40
 
-
     if player.rect.centery > scy:
         if EnemyGroup.sprites() == []:
             player.rect.centery = 0
@@ -180,8 +180,9 @@ while True:
     if (playergridx, playergridy) != (prev_gridx, prev_gridy):
         # clamp to map bounds to avoid index errors
         prev_gridx, prev_gridy = playergridx, playergridy
-        EnemyGroup.empty()
         generate_room_tiles(tiles, the_map, playergridx, playergridy)
+        EnemyGroup = the_map[playergridy][playergridx].EneGroup
+        atk.enemy_group = EnemyGroup
         if current_room is not None and current_room.name != "TBLR" and current_room.entered == False:
             if current_room.entered == False and current_room.lootOrMonster == True:
                 current_room.group = EnemyGroup
@@ -199,10 +200,11 @@ while True:
                 current_room.interacted = True
                 print("Player resources:", Player_resources)
 
+    # Enemy movement towards player
+    # for enemy in EnemyGroup:
+    #     enemy.move_towards_player()
 
-    for enemy in EnemyGroup:
-        enemy.move_towards_player()
-
+    # Drawing and game logic based on current screen
     if current_Screen_value == 1:
         run_game(player, tiles, clock, window, EnemyGroup, players, pAtkGroup, atk, Player_resources, current_room.EntGrp, room_Score)
 
@@ -287,6 +289,8 @@ while True:
             room_list = []
             generate_rooms(the_map, room_list)
             #remove_improper_paths(the_map, room_list)
+            for Room in room_list:
+                Room.Rconnect(the_map)
             generate_room_tiles(tiles, the_map, playergridx, playergridy)
             print(f'rooms: {room_list}')
             soruce_room = the_map[2][2]
@@ -298,6 +302,3 @@ while True:
         
         
         pygame.display.flip()
-
-
-

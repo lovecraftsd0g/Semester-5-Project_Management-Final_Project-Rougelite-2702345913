@@ -87,6 +87,10 @@ class roomv2:
 
 
     def spawnroom(self,roomtemplates, roomlist):
+        room_up = None
+        room_down = None
+        room_right = None
+        room_left = None
         # if the paths is divisible by 2, it has a path up
         # if the paths is divisible by 3, it has a path down
         # if the paths is divisible by 7, it has a path right
@@ -95,7 +99,7 @@ class roomv2:
             if self.y > 0 and self.map[self.y-1][self.x] is None:
                 tmpl = random.choice(roomtemplates.get("bottom"))
                 room_up = roomv2(tmpl.name, self.x, self.y - 1, tmpl.paths, self.map)
-                room_up.lootOrMonster = tmpl.lootOrMonster
+                room_up.lootOrMonster = random.choice([True, False])
                 room_up.quantity = tmpl.quantity
                 self.map[room_up.y][room_up.x] = room_up
                 self.map[room_up.y][room_up.x].spawnroom(roomtemplates, roomlist)
@@ -104,7 +108,7 @@ class roomv2:
             if self.y < len(self.map)-1 and self.map[self.y + 1][self.x] is None:
                 tmpl = random.choice(roomtemplates.get("top"))
                 room_down = roomv2(tmpl.name, self.x, self.y + 1, tmpl.paths, self.map)
-                room_down.lootOrMonster = tmpl.lootOrMonster
+                room_down.lootOrMonster = random.choice([True, False])
                 room_down.quantity = tmpl.quantity
                 self.map[room_down.y][room_down.x] = room_down
                 self.map[room_down.y][room_down.x].spawnroom(roomtemplates, roomlist)
@@ -113,7 +117,7 @@ class roomv2:
             if self.x < len(self.map[0])-1 and self.map[self.y][self.x+1] is None:
                 tmpl = random.choice(roomtemplates.get("right_exit"))
                 room_right = roomv2(tmpl.name, self.x + 1, self.y, tmpl.paths, self.map)
-                room_right.lootOrMonster = tmpl.lootOrMonster
+                room_right.lootOrMonster = random.choice([True, False])
                 room_right.quantity = tmpl.quantity
                 self.map[room_right.y][room_right.x] = room_right
                 self.map[room_right.y][room_right.x].spawnroom(roomtemplates, roomlist)
@@ -122,10 +126,27 @@ class roomv2:
             if self.x > 0 and self.map[self.y][self.x-1] is None:
                 tmpl = random.choice(roomtemplates.get("left_exit"))
                 room_left = roomv2(tmpl.name, self.x - 1, self.y, tmpl.paths, self.map)
-                room_left.lootOrMonster = tmpl.lootOrMonster
+                room_left.lootOrMonster = random.choice([True, False])
                 room_left.quantity = tmpl.quantity
                 self.map[room_left.y][room_left.x] = room_left
                 self.map[room_left.y][room_left.x].spawnroom(roomtemplates, roomlist)
+        
+        # After creating and adding a room, spawn its enemies
+        if room_up:  # For upward room
+            if room_up.lootOrMonster:
+                room_up.spawn_enemies()
+        
+        if room_down:  # For downward room
+            if room_down.lootOrMonster:
+                room_down.spawn_enemies()
+        
+        if room_right:  # For rightward room
+            if room_right.lootOrMonster:
+                room_right.spawn_enemies()
+        
+        if room_left:  # For leftward room
+            if room_left.lootOrMonster:
+                room_left.spawn_enemies()
         roomlist.append(self)
     
     def checkpath(self, direction):
@@ -138,3 +159,17 @@ class roomv2:
 
     def __str__(self):
         return f"{self.name}"
+    
+    def spawn_enemies(self):
+        """Spawn enemies for this room if lootOrMonster is True"""
+        if self.lootOrMonster and self.quantity > 0:
+            # Clear any existing enemies
+            self.EneGroup.empty()
+            
+            # Spawn new enemies
+            for i in range(self.quantity):
+                # Fixed spawn positions (not dependent on x to avoid division by zero)
+                spawn_x = 100 + (i * 60)  # Spread horizontally
+                spawn_y = 160  # Middle of room
+                new_enemy = enemy(spawn_x, spawn_y)
+                self.EneGroup.add(new_enemy)

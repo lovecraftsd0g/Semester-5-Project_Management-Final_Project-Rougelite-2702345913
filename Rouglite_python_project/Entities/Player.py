@@ -107,6 +107,7 @@ class Player_Character(pygame.sprite.Sprite):
                     
 
 #hit scan
+#duded you need tix the atk 
 class Atk(pygame.sprite.Sprite):
     def __init__(self, pos, entity_targets, Size=(50, 50), damage=20):
         super().__init__()  # Fixed syntax
@@ -120,12 +121,12 @@ class Atk(pygame.sprite.Sprite):
         self.damage = damage
         self.active = False
 
-    def update(self):
+    def update(self, Targets):
         keys = pygame.key.get_pressed()
         
         # Clear and update target list
         self.targlis = []
-        for entity in self.entity_targets:
+        for entity in Targets:
             if self.rect.colliderect(entity.rect):
                 self.targlis.append(entity)
         
